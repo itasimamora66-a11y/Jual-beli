@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Toko Privat Saya</title>
+    <style>
+        body { font-family: sans-serif; background: #f4f7f6; margin: 0; padding: 20px; }
+        .container { max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .form-box { background: #eee; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+        input, select { width: 100%; padding: 10px; margin: 5px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: 10px; }
+        .btn-add { background: #28a745; color: white; }
+        .btn-view { background: #007bff; color: white; }
+        .summary { display: flex; gap: 10px; margin: 20px 0; }
+        .card { flex: 1; padding: 15px; border-radius: 8px; text-align: center; color: white; }
+        .in { background: #28a745; } .out { background: #dc3545; }
+        #arsip-section { display: none; margin-top: 20px; border-top: 2px solid #ddd; padding-top: 10px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 10px; border-bottom: 1px solid #ddd; text-align: left; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Input Dagangan</h2>
+
+    <div class="form-box">
+        <input type="text" id="namaBarang" placeholder="Nama Barang">
+        <select id="tipe">
+            <option value="masuk">Pemasukan</option>
+            <option value="keluar">Pengeluaran</option>
+        </select>
+        <input type="number" id="nominal" placeholder="Harga Rp">
+        <button class="btn-add" onclick="simpanData()">Simpan Data</button>
+    </div>
+
+    <button class="btn-view" onclick="bukaArsip()">Buka Arsip Laporan (Khusus Pemilik)</button>
+
+    <div id="arsip-section">
+        <h3>Laporan Keuangan</h3>
+        <div class="summary">
+            <div class="card in"><small>Total Masuk</small><br><span id="txt-masuk">0</span></div>
+            <div class="card out"><small>Total Keluar</small><br><span id="txt-keluar">0</span></div>
+        </div>
+        <table>
+            <thead><tr><th>Barang</th><th>Harga</th></tr></thead>
+            <tbody id="tabel-body"></tbody>
+        </table>
+        <button onclick="tutupArsip()" style="background:#666; color:white;">Tutup Arsip</button>
+    </div>
+</div>
+
+<script>
+    const PASSWORD_RAHASIA = "1234"; // Ganti sesukamu
+
+    function simpanData() {
+        const nama = document.getElementById('namaBarang').value;
+        const tipe = document.getElementById('tipe').value;
+        const harga = document.getElementById('nominal').value;
+        if(!nama || !harga) return alert("Isi lengkap!");
+
+        const data = JSON.parse(localStorage.getItem('dataToko')) || [];
+        data.push({ nama, tipe, harga });
+        localStorage.setItem('dataToko', JSON.stringify(data));
+        
+        alert("Data tersimpan di memori HP ini!");
+        document.getElementById('namaBarang').value = '';
+        document.getElementById('nominal').value = '';
+    }
+
+    function bukaArsip() {
+        const pass = prompt("Masukkan Password Pemilik:");
+        if (pass === PASSWORD_RAHASIA) {
+            document.getElementById('arsip-section').style.display = 'block';
+            muatTabel();
+        } else {
+            alert("Password Salah! Kamu bukan pemilik.");
+        }
+    }
+
+    function tutupArsip() {
+        document.getElementById('arsip-section').style.display = 'none';
+    }
+
+    function muatTabel() {
+        const data = JSON.parse(localStorage.getItem('dataToko')) || [];
+        const container = document.getElementById('tabel-body');
+        let inTotal = 0, outTotal = 0;
+        container.innerHTML = '';
+
+        data.forEach(item => {
+            container.innerHTML += `<tr><td>${item.nama}</td><td>Rp ${parseInt(item.harga).toLocaleString()}</td></tr>`;
+            if(item.tipe === 'masuk') inTotal += parseInt(item.harga);
+            else outTotal += parseInt(item.harga);
+        });
+        document.getElementById('txt-masuk').innerText = 'Rp ' + inTotal.toLocaleString();
+        document.getElementById('txt-keluar').innerText = 'Rp ' + outTotal.toLocaleString();
+    }
+</script>
+</body>
+</html>
+
